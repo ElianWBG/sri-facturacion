@@ -45,6 +45,8 @@ class Contribuyente(models.Model):
             self.api_key = secrets.token_urlsafe(32)
         super().save(*args, **kwargs)
 
+    is_authenticated = True  # requerido por DRF IsAuthenticated cuando se usa como request.user
+
     @property
     def simulado(self):
         """True cuando no hay firma real cargada. El flujo usa firma mock."""
