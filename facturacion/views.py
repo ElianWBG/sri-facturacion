@@ -1,3 +1,4 @@
+import threading
 from decimal import Decimal
 
 from rest_framework import status
@@ -59,7 +60,11 @@ class EmitirFacturaView(APIView):
             payload                     = request.data,
         )
 
-        emitir_factura.delay(factura.id)
+        threading.Thread(
+            target=emitir_factura.apply,
+            kwargs={'args': [factura.id]},
+            daemon=True,
+        ).start()
 
         return Response(
             FacturaEstadoSerializer(factura).data,
