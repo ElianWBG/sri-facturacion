@@ -23,6 +23,7 @@ def env_bool(key, default=False):
 SECRET_KEY    = env('SECRET_KEY', 'dev-insecure-change-me-in-production')
 DEBUG         = env_bool('DEBUG', False)
 ALLOWED_HOSTS = [h.strip() for h in env('ALLOWED_HOSTS', '').split(',') if h.strip()] or ['*']
+CSRF_TRUSTED_ORIGINS = [h.strip() for h in env('CSRF_TRUSTED_ORIGINS', 'https://*.railway.app').split(',') if h.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
@@ -40,6 +41,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
