@@ -3,6 +3,7 @@ Configuración del microservicio de facturación multi-tenant.
 Credenciales sensibles se leen de variables de entorno.
 """
 import os
+import urllib.parse
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -21,7 +22,7 @@ def env_bool(key, default=False):
 
 SECRET_KEY    = env('SECRET_KEY', 'dev-insecure-change-me-in-production')
 DEBUG         = env_bool('DEBUG', False)
-ALLOWED_HOSTS = [h.strip() for h in env('ALLOWED_HOSTS', '').split(',') if h.strip()]
+ALLOWED_HOSTS = [h.strip() for h in env('ALLOWED_HOSTS', '').split(',') if h.strip()] or ['*']
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
@@ -58,16 +59,30 @@ TEMPLATES = [{
     },
 }]
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME':     env('DB_NAME', 'sri_facturacion'),
-        'USER':     env('DB_USER', 'postgres'),
-        'PASSWORD': env('DB_PASSWORD', ''),
-        'HOST':     env('DB_HOST', 'localhost'),
-        'PORT':     env('DB_PORT', '5432'),
+_db_url = env('DATABASE_URL', '')
+if _db_url:
+    _u = urllib.parse.urlparse(_db_url)
+    DATABASES = {
+        'default': {
+            'ENGINE':   'django.db.backends.postgresql',
+            'NAME':     _u.path.lstrip('/'),
+            'USER':     _u.username or '',
+            'PASSWORD': _u.password or '',
+            'HOST':     _u.hostname or 'localhost',
+            'PORT':     str(_u.port or 5432),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE':   'django.db.backends.postgresql',
+            'NAME':     env('DB_NAME', 'sri_facturacion'),
+            'USER':     env('DB_USER', 'postgres'),
+            'PASSWORD': env('DB_PASSWORD', ''),
+            'HOST':     env('DB_HOST', 'localhost'),
+            'PORT':     env('DB_PORT', '5432'),
+        }
+    }
 
 LANGUAGE_CODE = 'es-ec'
 TIME_ZONE     = 'America/Guayaquil'
