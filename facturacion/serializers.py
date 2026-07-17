@@ -1,3 +1,6 @@
+import base64
+import os
+
 from rest_framework import serializers
 
 from .models import Factura
@@ -33,10 +36,19 @@ class VentaEntradaSerializer(serializers.Serializer):
 class FacturaEstadoSerializer(serializers.ModelSerializer):
     numero_comprobante = serializers.CharField(read_only=True)
     contribuyente_ruc  = serializers.CharField(source='contribuyente.ruc', read_only=True)
+    xml                = serializers.SerializerMethodField()
 
     class Meta:
         model = Factura
         fields = [
             'id', 'contribuyente_ruc', 'estado', 'clave_acceso',
             'numero_comprobante', 'numero_autorizacion', 'mensaje_sri', 'created_at',
+            'xml',
         ]
+
+    def get_xml(self, obj):
+        path = obj.xml_autorizado_path or obj.xml_path
+        if not path or not os.path.exists(path):
+            return None
+        with open(path, 'rb') as f:
+            return base64.b64encode(f.read()).decode()
