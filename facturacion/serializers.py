@@ -26,6 +26,7 @@ class VentaEntradaSerializer(serializers.Serializer):
     cliente_direccion           = serializers.CharField(max_length=300, required=False, allow_blank=True)
     cliente_telefono            = serializers.CharField(max_length=30, required=False, allow_blank=True)
     items                       = ItemVentaSerializer(many=True)
+    enviar_email                = serializers.BooleanField(required=False, default=True)
 
     def validate_items(self, value):
         if not value:

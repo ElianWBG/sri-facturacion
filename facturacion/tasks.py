@@ -127,15 +127,16 @@ def emitir_factura(self, factura_id: int):
         factura.pdf_path = str(pdf_path)
         factura.save(update_fields=['pdf_path'])
 
-        # 6) Correo al cliente (fallo aislado: no reintenta todo el flujo)
-        try:
-            enviar_comprobante(
-                factura=factura,
-                xml_path=factura.xml_autorizado_path or factura.xml_path,
-                pdf_path=factura.pdf_path,
-            )
-        except Exception as mail_exc:
-            logger.exception('Error enviando comprobante por correo para factura %s: %s', factura_id, mail_exc)
+        # 6) Correo al cliente (omitido si el llamador pidió enviar_email=false)
+        if factura.payload.get('enviar_email', True):
+            try:
+                enviar_comprobante(
+                    factura=factura,
+                    xml_path=factura.xml_autorizado_path or factura.xml_path,
+                    pdf_path=factura.pdf_path,
+                )
+            except Exception as mail_exc:
+                logger.exception('Error enviando comprobante por correo para factura %s: %s', factura_id, mail_exc)
 
         return {'factura': factura_id, 'estado': factura.estado}
 
